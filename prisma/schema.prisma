@@ -1,0 +1,378 @@
+// CivicaX v0.1 - Functional Prototype
+// Schema is deliberately PROVIDER-PORTABLE: no native enums, no arrays, no
+// provider-specific @db.* attributes. Dev runs on SQLite (zero setup); moving to
+// PostgreSQL is a one-line datasource change + `prisma migrate dev`.
+// Role/status/event vocabularies live in src/lib/domain/constants.ts as TS unions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------------------------------------------------------------- identity
+
+model Role {
+  id          String  @id @default(cuid())
+  code        String  @unique // CITIZEN | OFFICER | ADMINISTRATOR
+  name        String
+  description String?
+  users       User[]
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String
+  passwordHash String
+  roleCode     String
+  role         Role    @relation(fields: [roleCode], references: [code])
+  officeId     String?
+  office       Office? @relation(fields: [officeId], references: [id])
+  position     String? // e.g. Receiving Officer, Evaluator, Approving Officer
+  isActive     Boolean @default(true)
+  // Every seeded identity is fabricated. Never store real citizen PII here.
+  syntheticDemo Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  casesFiled   Case[]                @relation("CaseApplicant")
+  assignments  CaseAssignment[]
+  events       CaseEvent[]
+  reviewedRecs AgentRecommendation[] @relation("RecommendationReviewer")
+
+  @@index([roleCode])
+  @@index([officeId])
+}
+
+// ---------------------------------------------------------------- org units
+
+model Office {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  name      String
+  shortName String?
+  // Real PSA PSGC code for the host LGU (see /data/sources.md for provenance).
+  lguName     String?
+  lguPsgcCode String?
+  regionName  String?
+  isFrontline Boolean @default(false)
+
+  users       User[]
+  steps       WorkflowStep[]
+  cases       Case[]           @relation("CaseCurrentOffice")
+  assignments CaseAssignment[]
+  events      CaseEvent[]
+  metrics     OfficeMetric[]
+}
+
+// ---------------------------------------------------------------- service catalogue
+
+model ServiceType {
+  id          String  @id @default(cuid())
+  code        String  @unique // BUSINESS_PERMIT, BUILDING_PERMIT, ...
+  name        String
+  description String?
+  // RA 11032 classification: SIMPLE | COMPLEX | HIGHLY_TECHNICAL.
+  // Statutory ceilings (3/7/20 working days) are sourced, not invented -
+  // see src/lib/domain/sla.ts and /data/sources.md.
+  ra11032Classification String
+  citizenSummary        String?
+  isActive              Boolean @default(true)
+
+  definitions  WorkflowDefinition[]
+  requirements ServiceRequirement[]
+  cases        Case[]
+}
+
+// Configurable documentary requirements. The Document Review Agent reads THESE;
+// it is never permitted to invent a requirement (see src/lib/agents/).
+model ServiceRequirement {
+  id            String      @id @default(cuid())
+  serviceTypeId String
+  serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id], onDelete: Cascade)
+  code          String
+  name          String
+  description   String?
+  isRequired    Boolean     @default(true)
+  // Where this requirement came from. ILLUSTRATIVE means configured for the
+  // demo and NOT asserted as any specific LGU official requirement.
+  sourceNote    String?
+  provenance    String      @default("ILLUSTRATIVE")
+  sequence      Int         @default(0)
+
+  documents CaseDocument[]
+
+  @@unique([serviceTypeId, code])
+}
+
+// ---------------------------------------------------------------- workflow definition
+
+model WorkflowDefinition {
+  id            String      @id @default(cuid())
+  serviceTypeId String
+  serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id], onDelete: Cascade)
+  version       Int         @default(1)
+  name          String
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+
+  steps       WorkflowStep[]
+  transitions WorkflowTransition[]
+  cases       Case[]
+
+  @@unique([serviceTypeId, version])
+}
+
+model WorkflowStep {
+  id           String             @id @default(cuid())
+  definitionId String
+  definition   WorkflowDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  code         String
+  name         String
+  sequence     Int
+  officeId     String?
+  office       Office?            @relation(fields: [officeId], references: [id])
+  // CivicaX prototype metric: per-step target used for queue triage. This is a
+  // configured threshold, NOT a statutory figure.
+  targetHours  Int?
+  isInitial    Boolean            @default(false)
+  isTerminal   Boolean            @default(false)
+  // Citizen-facing vocabulary, so the Explanation Agent paraphrases configured
+  // copy instead of inventing what a status means.
+  citizenLabel            String?
+  citizenExplanation      String?
+  actionRequiredByCitizen Boolean @default(false)
+
+  transitionsFrom WorkflowTransition[] @relation("TransitionFrom")
+  transitionsTo   WorkflowTransition[] @relation("TransitionTo")
+  currentCases    Case[]               @relation("CaseCurrentStep")
+  eventsFrom      CaseEvent[]          @relation("EventFromStep")
+  eventsTo        CaseEvent[]          @relation("EventToStep")
+  metrics         OfficeMetric[]
+
+  @@unique([definitionId, code])
+  @@index([definitionId, sequence])
+}
+
+model WorkflowTransition {
+  id           String             @id @default(cuid())
+  definitionId String
+  definition   WorkflowDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  fromStepId   String
+  fromStep     WorkflowStep       @relation("TransitionFrom", fields: [fromStepId], references: [id], onDelete: Cascade)
+  toStepId     String
+  toStep       WorkflowStep       @relation("TransitionTo", fields: [toStepId], references: [id], onDelete: Cascade)
+  // ADVANCE | RETURN | ENDORSE | APPROVE | REJECT | CANCEL
+  action       String
+  label        String
+  // Role permitted to fire this transition (enforced server-side).
+  requiredRole String
+  // Optional declarative guard evaluated by the engine, e.g.
+  // allRequiredDocumentsVerified. Guard names are whitelisted in code.
+  guard        String?
+  isRework     Boolean            @default(false)
+
+  @@unique([definitionId, fromStepId, toStepId, action])
+}
+
+// ---------------------------------------------------------------- transactions
+
+model Case {
+  id              String             @id @default(cuid())
+  caseNumber      String             @unique
+  serviceTypeId   String
+  serviceType     ServiceType        @relation(fields: [serviceTypeId], references: [id])
+  definitionId    String
+  definition      WorkflowDefinition @relation(fields: [definitionId], references: [id])
+  currentStepId   String
+  currentStep     WorkflowStep       @relation("CaseCurrentStep", fields: [currentStepId], references: [id])
+  currentOfficeId String?
+  currentOffice   Office?            @relation("CaseCurrentOffice", fields: [currentOfficeId], references: [id])
+
+  // ACTIVE | RETURNED | COMPLETED | REJECTED | CANCELLED
+  status String @default("ACTIVE")
+
+  applicantId   String?
+  applicant     User?   @relation("CaseApplicant", fields: [applicantId], references: [id])
+  applicantName String // synthetic identity
+  businessName  String?
+  lguName       String?
+  lguPsgcCode   String?
+
+  submittedAt DateTime
+  completedAt DateTime?
+  // Statutory deadline computed in WORKING days per RA 11032 classification.
+  slaDueAt    DateTime?
+  slaBreached Boolean   @default(false)
+
+  // Hard label so no synthetic record can ever be rendered as official data.
+  syntheticDemo      Boolean @default(true)
+  dataClassification String  @default("SYNTHETIC_DEMO")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents       CaseDocument[]
+  assignments     CaseAssignment[]
+  events          CaseEvent[]
+  auditRecords    AuditRecord[]
+  recommendations AgentRecommendation[]
+
+  @@index([status])
+  @@index([currentOfficeId])
+  @@index([currentStepId])
+  @@index([submittedAt])
+}
+
+model CaseDocument {
+  id            String              @id @default(cuid())
+  caseId        String
+  case          Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  requirementId String?
+  requirement   ServiceRequirement? @relation(fields: [requirementId], references: [id])
+  name          String
+  // MISSING | SUBMITTED | VERIFIED | REJECTED
+  status        String              @default("MISSING")
+  fileRef       String? // pointer only; no real documents stored in the prototype
+  note          String?
+  submittedAt   DateTime?
+  verifiedAt    DateTime?
+
+  @@index([caseId])
+}
+
+model CaseAssignment {
+  id         String    @id @default(cuid())
+  caseId     String
+  case       Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  officeId   String
+  office     Office    @relation(fields: [officeId], references: [id])
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id])
+  assignedAt DateTime
+  releasedAt DateTime?
+
+  @@index([caseId])
+  @@index([officeId, releasedAt])
+}
+
+// The append-only spine of the system. Every workflow transition writes exactly
+// one CaseEvent, and every CaseEvent gets exactly one AuditRecord.
+model CaseEvent {
+  id          String        @id @default(cuid())
+  caseId      String
+  case        Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sequence    Int
+  // CASE_SUBMITTED | STEP_ENTERED | STEP_COMPLETED | ENDORSED | RETURNED |
+  // APPROVED | REJECTED | DOCUMENT_VERIFIED | RECOMMENDATION_APPROVED | ...
+  type        String
+  actorUserId String?
+  actorUser   User?         @relation(fields: [actorUserId], references: [id])
+  actorRole   String?
+  actorLabel  String?
+  officeId    String?
+  office      Office?       @relation(fields: [officeId], references: [id])
+  fromStepId  String?
+  fromStep    WorkflowStep? @relation("EventFromStep", fields: [fromStepId], references: [id])
+  toStepId    String?
+  toStep      WorkflowStep? @relation("EventToStep", fields: [toStepId], references: [id])
+  note        String?
+  // Declared visibility, driving the transparency model.
+  visibility  String        @default("INTERNAL") // CITIZEN | INTERNAL
+  occurredAt  DateTime
+  // Dwell time in the previous state - raw material for all process metrics.
+  durationFromPrevMs Int?
+  metadataJson       String?
+
+  auditRecord AuditRecord?
+
+  @@unique([caseId, sequence])
+  @@index([caseId, occurredAt])
+  @@index([type])
+}
+
+// ---------------------------------------------------------------- audit ledger
+
+// Tamper-evident hash chain. One record per event, chained per case.
+// Implements the AuditLedger interface in src/lib/audit/ - swappable for a
+// permissioned ledger without touching workflow code.
+model AuditRecord {
+  id          String    @id @default(cuid())
+  eventId     String    @unique
+  event       CaseEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  caseId      String
+  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sequence    Int
+  algorithm   String    @default("sha256")
+  // Hash of the canonicalised event payload only.
+  payloadHash String
+  // Hash of the previous link in this case chain.
+  prevHash    String
+  // sha256(payloadHash + prevHash) - the chain link itself.
+  hash        String
+  // Deliberately excludes applicant identity and document contents: sensitive
+  // fields stay off-ledger.
+  createdAt   DateTime  @default(now())
+
+  @@unique([caseId, sequence])
+  @@index([caseId, sequence])
+}
+
+// ---------------------------------------------------------------- AI layer
+
+// AI never mutates workflow state. It writes a proposal here; a human with the
+// right role approves it; only then does the engine execute a transition.
+model AgentRecommendation {
+  id             String @id @default(cuid())
+  caseId         String
+  case           Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  // DOCUMENT_REVIEW | ROUTING | BOTTLENECK | CITIZEN_EXPLANATION
+  agentType      String
+  recommendation String
+  reasoning      String
+  // Structured, machine-checkable proposal (e.g. the transition to fire).
+  proposedActionJson String?
+  // 0..1. Rule-derived and explainable - never a model-asserted number.
+  confidence         Float
+  // pending | approved | rejected | expired
+  status             String   @default("pending")
+  // RULES when produced entirely by deterministic rules over workflow data;
+  // RULES+LLM when an LLM only phrased rule-derived findings.
+  generatedBy        String   @default("RULES")
+  modelId            String?
+  createdAt          DateTime @default(now())
+  reviewedById       String?
+  reviewedBy         User?    @relation("RecommendationReviewer", fields: [reviewedById], references: [id])
+  reviewedAt         DateTime?
+  reviewNote         String?
+
+  @@index([caseId])
+  @@index([status])
+  @@index([agentType])
+}
+
+// ---------------------------------------------------------------- analytics
+
+// Pre-aggregated office/step performance. All values are CivicaX prototype
+// metrics computed over synthetic transactions unless stated otherwise.
+model OfficeMetric {
+  id             String        @id @default(cuid())
+  officeId       String
+  office         Office        @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  stepId         String?
+  step           WorkflowStep? @relation(fields: [stepId], references: [id])
+  periodStart    DateTime
+  periodEnd      DateTime
+  casesEntered   Int           @default(0)
+  casesCompleted Int           @default(0)
+  pendingCount   Int           @default(0)
+  avgWaitMs      Float         @default(0)
+  avgActiveMs    Float         @default(0)
+  slaBreaches    Int           @default(0)
+  reworkCount    Int           @default(0)
+  computedAt     DateTime      @default(now())
+
+  @@index([officeId, periodStart])
+}
