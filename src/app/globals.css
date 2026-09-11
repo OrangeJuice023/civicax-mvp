@@ -1,26 +1,273 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ==========================================================================
+   CivicaX design tokens
+   --------------------------------------------------------------------------
+   Visual language: government infrastructure / enterprise SaaS. Restrained,
+   information-dense, high-contrast. Deliberately NOT a consumer or crypto
+   aesthetic - no gradients, no glows, no decorative colour.
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+   Every colour is declared as a CSS variable on :root and mapped into Tailwind
+   via @theme inline, so a single variable swap re-themes every utility. Dark
+   values are DECLARED TWICE on purpose:
+     - under prefers-color-scheme, guarded with :not([data-theme="light"]),
+       so the OS setting applies but an explicit light choice still wins;
+     - under [data-theme="dark"], so an explicit dark choice wins over the OS.
+
+   The chart palette is not improvised. The categorical slots, the sequential
+   blue ramp and the four status colours come from a validated palette and were
+   re-checked with the palette validator for this app's two-series usage:
+   light  - worst adjacent pair CVD dE 24.7, normal-vision dE 33.6, all >= 3:1
+   dark   - worst adjacent pair CVD dE 26.8, normal-vision dE 31.8, all >= 3:1
+   Target is CVD dE >= 8, so there is comfortable headroom. If you add a third
+   series, take the NEXT slot in order - never cycle or invent a hue.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* surfaces, back to front */
+  --ca-canvas: #f6f6f4;
+  --ca-surface-1: #fcfcfb;
+  --ca-surface-2: #f0efec;
+  --ca-surface-3: #e6e5e1;
+
+  /* borders: hairline for dividers, strong for emphasis */
+  --ca-border: #dcdbd6;
+  --ca-border-strong: #bfbeb8;
+
+  /* ink */
+  --ca-ink-primary: #0b0b0b;
+  --ca-ink-secondary: #52514e;
+  --ca-ink-muted: #7a7974;
+  --ca-ink-inverse: #fcfcfb;
+
+  /* institutional accent (matches categorical slot 1) */
+  --ca-accent: #2a78d6;
+  --ca-accent-hover: #256abf;
+  --ca-accent-subtle: #cde2fb;
+  --ca-accent-ink: #184f95;
+
+  /* status - fixed roles, never reused as series colours.
+     Always paired with an icon and a text label so meaning never rests on
+     colour alone (warning and serious sit below 3:1 on light by design). */
+  --ca-good: #0ca30c;
+  --ca-warning: #fab219;
+  --ca-serious: #ec835a;
+  --ca-critical: #d03b3b;
+  --ca-good-subtle: #e2f5e2;
+  --ca-warning-subtle: #fdf1d5;
+  --ca-serious-subtle: #fbe9e1;
+  --ca-critical-subtle: #f9e3e3;
+
+  /* categorical series, in fixed assignment order */
+  --ca-series-1: #2a78d6;
+  --ca-series-2: #eb6834;
+  --ca-series-3: #1baf7a;
+  --ca-series-4: #eda100;
+
+  /* sequential blue ramp, light -> dark, for magnitude encoding.
+     For ordinal marks start no lighter than seq-250 (2:1 vs light surface). */
+  --ca-seq-100: #cde2fb;
+  --ca-seq-250: #86b6ef;
+  --ca-seq-400: #3987e5;
+  --ca-seq-550: #1c5cab;
+  --ca-seq-700: #0d366b;
+
+  /* recessive chart furniture */
+  --ca-grid: #e6e5e1;
+  --ca-axis: #bfbeb8;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --ca-canvas: #121211;
+    --ca-surface-1: #1a1a19;
+    --ca-surface-2: #232322;
+    --ca-surface-3: #2d2d2b;
+
+    --ca-border: #383835;
+    --ca-border-strong: #4d4d49;
+
+    --ca-ink-primary: #ffffff;
+    --ca-ink-secondary: #c3c2b7;
+    --ca-ink-muted: #91908a;
+    --ca-ink-inverse: #121211;
+
+    --ca-accent: #3987e5;
+    --ca-accent-hover: #5598e7;
+    --ca-accent-subtle: #14294a;
+    --ca-accent-ink: #9ec5f4;
+
+    --ca-good: #0ca30c;
+    --ca-warning: #fab219;
+    --ca-serious: #ec835a;
+    --ca-critical: #d03b3b;
+    --ca-good-subtle: #122b12;
+    --ca-warning-subtle: #33280a;
+    --ca-serious-subtle: #33201a;
+    --ca-critical-subtle: #331717;
+
+    --ca-series-1: #3987e5;
+    --ca-series-2: #d95926;
+    --ca-series-3: #199e70;
+    --ca-series-4: #c98500;
+
+    --ca-seq-100: #0d366b;
+    --ca-seq-250: #184f95;
+    --ca-seq-400: #2a78d6;
+    --ca-seq-550: #5598e7;
+    --ca-seq-700: #9ec5f4;
+
+    --ca-grid: #2d2d2b;
+    --ca-axis: #4d4d49;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ca-canvas: #121211;
+  --ca-surface-1: #1a1a19;
+  --ca-surface-2: #232322;
+  --ca-surface-3: #2d2d2b;
+
+  --ca-border: #383835;
+  --ca-border-strong: #4d4d49;
+
+  --ca-ink-primary: #ffffff;
+  --ca-ink-secondary: #c3c2b7;
+  --ca-ink-muted: #91908a;
+  --ca-ink-inverse: #121211;
+
+  --ca-accent: #3987e5;
+  --ca-accent-hover: #5598e7;
+  --ca-accent-subtle: #14294a;
+  --ca-accent-ink: #9ec5f4;
+
+  --ca-good: #0ca30c;
+  --ca-warning: #fab219;
+  --ca-serious: #ec835a;
+  --ca-critical: #d03b3b;
+  --ca-good-subtle: #122b12;
+  --ca-warning-subtle: #33280a;
+  --ca-serious-subtle: #33201a;
+  --ca-critical-subtle: #331717;
+
+  --ca-series-1: #3987e5;
+  --ca-series-2: #d95926;
+  --ca-series-3: #199e70;
+  --ca-series-4: #c98500;
+
+  --ca-seq-100: #0d366b;
+  --ca-seq-250: #184f95;
+  --ca-seq-400: #2a78d6;
+  --ca-seq-550: #5598e7;
+  --ca-seq-700: #9ec5f4;
+
+  --ca-grid: #2d2d2b;
+  --ca-axis: #4d4d49;
+}
+
+@theme inline {
+  --color-canvas: var(--ca-canvas);
+  --color-surface-1: var(--ca-surface-1);
+  --color-surface-2: var(--ca-surface-2);
+  --color-surface-3: var(--ca-surface-3);
+
+  --color-hairline: var(--ca-border);
+  --color-hairline-strong: var(--ca-border-strong);
+
+  --color-ink: var(--ca-ink-primary);
+  --color-ink-secondary: var(--ca-ink-secondary);
+  --color-ink-muted: var(--ca-ink-muted);
+  --color-ink-inverse: var(--ca-ink-inverse);
+
+  --color-accent: var(--ca-accent);
+  --color-accent-hover: var(--ca-accent-hover);
+  --color-accent-subtle: var(--ca-accent-subtle);
+  --color-accent-ink: var(--ca-accent-ink);
+
+  --color-good: var(--ca-good);
+  --color-warning: var(--ca-warning);
+  --color-serious: var(--ca-serious);
+  --color-critical: var(--ca-critical);
+  --color-good-subtle: var(--ca-good-subtle);
+  --color-warning-subtle: var(--ca-warning-subtle);
+  --color-serious-subtle: var(--ca-serious-subtle);
+  --color-critical-subtle: var(--ca-critical-subtle);
+
+  --color-series-1: var(--ca-series-1);
+  --color-series-2: var(--ca-series-2);
+  --color-series-3: var(--ca-series-3);
+  --color-series-4: var(--ca-series-4);
+
+  --color-grid: var(--ca-grid);
+  --color-axis: var(--ca-axis);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Tailwind v4 needs to be told what "dark:" means when the theme can come from
+   either the OS or an explicit stamp. Most colour work happens through the
+   swapping variables above; this variant is for the rare structural exception. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]) *, :root:not([data-theme="light"])) {
+      @slot;
+    }
+  }
+  &:where(:root[data-theme="dark"] *, :root[data-theme="dark"]) {
+    @slot;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ca-canvas);
+  color: var(--ca-ink-primary);
+  font-family: var(--font-sans);
+  /* Dense administrative UI: tabular figures keep case numbers, durations and
+     counts from shifting width as they update. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Case numbers, hashes and durations are scanned in columns, not read as prose. */
+.ca-numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* An audit hash is long, meaningless to read, and must never break layout. */
+.ca-hash {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  word-break: break-all;
+}
+
+/* Visible focus is a requirement, not a preference. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--ca-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Wide tables and charts scroll inside their own container. The page body must
+   never scroll horizontally. */
+.ca-scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

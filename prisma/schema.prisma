@@ -65,6 +65,7 @@ model Office {
   assignments CaseAssignment[]
   events      CaseEvent[]
   metrics     OfficeMetric[]
+  projects    Project[]
 }
 
 // ---------------------------------------------------------------- service catalogue
@@ -216,8 +217,8 @@ model Case {
 
   documents       CaseDocument[]
   assignments     CaseAssignment[]
-  events          CaseEvent[]
-  auditRecords    AuditRecord[]
+  events          CaseEvent[]   @relation("CaseEvents")
+  auditRecords    AuditRecord[] @relation("CaseAuditRecords")
   recommendations AgentRecommendation[]
 
   @@index([status])
@@ -260,13 +261,24 @@ model CaseAssignment {
 
 // The append-only spine of the system. Every workflow transition writes exactly
 // one CaseEvent, and every CaseEvent gets exactly one AuditRecord.
+//
+// Scope: a CaseEvent records EITHER a citizen-transaction state change (caseId
+// set) OR an infrastructure-project lifecycle event (projectId set). Exactly one
+// of the two is populated - the database cannot express that XOR, so the
+// workflow/project engines enforce it in code. The audit chain verifies
+// integrity per owning record, so a project chain and a case chain never
+// interfere.
 model CaseEvent {
   id          String        @id @default(cuid())
-  caseId      String
-  case        Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  caseId      String?
+  case        Case?         @relation("CaseEvents", fields: [caseId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project?      @relation("ProjectEvents", fields: [projectId], references: [id], onDelete: Cascade)
   sequence    Int
   // CASE_SUBMITTED | STEP_ENTERED | STEP_COMPLETED | ENDORSED | RETURNED |
   // APPROVED | REJECTED | DOCUMENT_VERIFIED | RECOMMENDATION_APPROVED | ...
+  // plus infrastructure vocab: MILESTONE_SUBMITTED, VALIDATION_COMPLETED,
+  // MILESTONE_APPROVED, EVIDENCE_VERIFIED, PAYMENT_ELIGIBLE, etc.
   type        String
   actorUserId String?
   actorUser   User?         @relation(fields: [actorUserId], references: [id])
@@ -289,26 +301,35 @@ model CaseEvent {
   auditRecord AuditRecord?
 
   @@unique([caseId, sequence])
+  @@unique([projectId, sequence])
   @@index([caseId, occurredAt])
+  @@index([projectId, occurredAt])
   @@index([type])
 }
 
 // ---------------------------------------------------------------- audit ledger
 
-// Tamper-evident hash chain. One record per event, chained per case.
+// Tamper-evident hash chain. One record per event, chained per owning record.
 // Implements the AuditLedger interface in src/lib/audit/ - swappable for a
 // permissioned ledger without touching workflow code.
+//
+// The chain is per owning record: a Case chain and a Project chain are
+// independent, each starting from the genesis hash. A CaseEvent with a
+// projectId writes into the project chain; one with a caseId writes into the
+// case chain. Exactly one of caseId/projectId is populated.
 model AuditRecord {
   id          String    @id @default(cuid())
   eventId     String    @unique
   event       CaseEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  caseId      String
-  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  caseId      String?
+case        Case?         @relation("CaseAuditRecords", fields: [caseId], references: [id], onDelete: Cascade)
+  projectId   String?
+project     Project?      @relation("ProjectAuditRecords", fields: [projectId], references: [id], onDelete: Cascade)
   sequence    Int
   algorithm   String    @default("sha256")
   // Hash of the canonicalised event payload only.
   payloadHash String
-  // Hash of the previous link in this case chain.
+  // Hash of the previous link in this owning record's chain.
   prevHash    String
   // sha256(payloadHash + prevHash) - the chain link itself.
   hash        String
@@ -317,7 +338,9 @@ model AuditRecord {
   createdAt   DateTime  @default(now())
 
   @@unique([caseId, sequence])
+  @@unique([projectId, sequence])
   @@index([caseId, sequence])
+  @@index([projectId, sequence])
 }
 
 // ---------------------------------------------------------------- AI layer
@@ -362,7 +385,7 @@ model OfficeMetric {
   officeId       String
   office         Office        @relation(fields: [officeId], references: [id], onDelete: Cascade)
   stepId         String?
-  step           WorkflowStep? @relation(fields: [stepId], references: [id])
+  step           WorkflowStep? @relation(fields: [stepId], references: [id], onDelete: Cascade)
   periodStart    DateTime
   periodEnd      DateTime
   casesEntered   Int           @default(0)
@@ -375,4 +398,162 @@ model OfficeMetric {
   computedAt     DateTime      @default(now())
 
   @@index([officeId, periodStart])
+}
+
+// ---------------------------------------------------------------- infrastructure domain
+
+/**
+ * A public infrastructure project under oversight monitoring.
+ *
+ * Parallel domain to the citizen-transaction Case model. The two share the
+ * audit chain (CaseEvent/AuditRecord) and the authorization policy, but a
+ * project is not a transaction: it has a contractor, a budget, a location and
+ * a lifecycle of milestones rather than a workflow definition.
+ */
+model Project {
+  id            String      @id @default(cuid())
+  projectId     String      @unique // PRJ-00026
+  name          String
+  category      String
+  sector        String
+  location      String
+  city          String
+  region        String
+  budget        Int
+  contractor    String
+  contractorId  String?
+  agency        String
+  officeId      String?
+  office        Office?     @relation(fields: [officeId], references: [id])
+  startDate     DateTime
+  targetCompletion DateTime
+  status        String      // PLANNING | ACTIVE | PENDING_APPROVAL | DELAYED | COMPLETED | ON_HOLD
+  progress      Int         @default(0)
+  procurementId String?
+  contractId    String?
+
+  milestones    Milestone[]
+  events        CaseEvent[]   @relation("ProjectEvents")
+  auditRecords  AuditRecord[] @relation("ProjectAuditRecords")
+
+  syntheticDemo      Boolean  @default(true)
+  dataClassification String   @default("SYNTHETIC_DEMO")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([officeId])
+}
+
+/**
+ * A phase within a project lifecycle: Procurement -> Contract -> Implementation
+ * -> Milestone -> Inspection -> Approval -> Payment -> Completion.
+ */
+model Milestone {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sequence      Int
+  name          String
+  code          String
+  description   String?
+  status        String    // DRAFT | SUBMITTED | EVIDENCE_REVIEW | VALIDATION | READY_FOR_APPROVAL | APPROVED | PAYMENT_ELIGIBLE | COMPLETED | BLOCKED | RETURNED
+  progress      Int       @default(0)
+  targetDate    DateTime?
+  completedAt   DateTime?
+  submittedAt   DateTime?
+  approvedAt    DateTime?
+  approvedBy    String?
+  targetWindowDays Int?
+
+  evidence      Evidence[]
+  validations   Validation[]
+
+  syntheticDemo      Boolean  @default(true)
+  dataClassification String   @default("SYNTHETIC_DEMO")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([projectId, sequence])
+  @@index([projectId, status])
+}
+
+/**
+ * Documentary evidence attached to a milestone. No real files are stored;
+ * fileRef is a pointer string only, matching the CaseDocument pattern.
+ */
+model Evidence {
+  id            String      @id @default(cuid())
+  milestoneId   String
+  milestone     Milestone   @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  type          String
+  title         String
+  description   String?
+  status        String      // MISSING | SUBMITTED | VERIFIED | REJECTED
+  submittedBy   String?
+  submittedAt   DateTime?
+  verifiedAt    DateTime?
+  verifiedBy    String?
+  source        String?
+  fileRef       String?
+  // Optional geotag: where the artefact was captured. Null when the
+  // submission was a document rather than a field observation.
+  latitude      Float?
+  longitude     Float?
+  accuracyM     Float?
+  capturedAt    DateTime?
+
+  syntheticDemo      Boolean  @default(true)
+  dataClassification String   @default("SYNTHETIC_DEMO")
+
+  @@index([milestoneId, status])
+}
+
+/**
+ * A validation decision on a milestone by a department/validator.
+ * A milestone only becomes READY_FOR_APPROVAL when every required
+ * validation is APPROVED. Enforced server-side, never in the UI.
+ */
+model Validation {
+  id            String      @id @default(cuid())
+  milestoneId   String
+  milestone     Milestone   @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  validatorId   String
+  validator     Validator   @relation(fields: [validatorId], references: [id], onDelete: Cascade)
+  department    String
+  role          String
+  status        String      // PENDING | APPROVED | REJECTED
+  note          String?
+  validatedAt   DateTime?
+  createdAt     DateTime    @default(now())
+
+  syntheticDemo      Boolean  @default(true)
+  dataClassification String   @default("SYNTHETIC_DEMO")
+
+  @@unique([milestoneId, validatorId])
+  @@index([milestoneId, status])
+}
+
+/**
+ * A validator node: an office, department or independent body that performs
+ * milestone validations. Synthetic representation of participation; not a
+ * distributed consensus network.
+ */
+model Validator {
+  id            String          @id @default(cuid())
+  code          String          @unique
+  name          String
+  department    String
+  role          String
+  status        String          // ACTIVE | OFFLINE
+  lastActivity  DateTime?
+  isActive      Boolean         @default(true)
+  validations   Validation[]
+
+  syntheticDemo      Boolean  @default(true)
+  dataClassification String   @default("SYNTHETIC_DEMO")
+  createdAt          DateTime @default(now())
+
+  @@index([status])
 }
