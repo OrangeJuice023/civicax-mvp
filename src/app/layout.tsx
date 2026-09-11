@@ -19,13 +19,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: {
-    default: 'CivicaX - Government Workflow Intelligence',
-    template: '%s - CivicaX',
-  },
+  title: 'CivicaX - Blockchain Infrastructure Monitoring System',
   description:
-    'CivicaX v0.1 functional prototype: a workflow, interoperability and process-intelligence layer for Philippine government administrative transactions.',
-  // A prototype containing synthetic records has no business being indexed.
+    'CivicaX: A real-time blockchain infrastructure monitoring and cryptographic consensus oversight system for Philippine public works.',
   robots: { index: false, follow: false },
 }
 
@@ -35,7 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-canvas text-ink">
+      <body className="min-h-full bg-[#07193b] text-slate-100 antialiased">
         {children}
       </body>
     </html>
