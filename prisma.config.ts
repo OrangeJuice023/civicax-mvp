@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { defineConfig, env } from 'prisma/config'
+import { defineConfig } from 'prisma/config'
 
 // Prisma 7 removed `url` from the schema datasource block. Migration and
 // introspection commands read the connection string from here instead; the
@@ -15,7 +15,7 @@ try {
 export default defineConfig({
   schema: path.join('prisma', 'schema.prisma'),
   datasource: {
-    url: env('DATABASE_URL'),
+    url: process.env.DATABASE_URL ?? 'file:./dev.db',
   },
   migrations: {
     seed: 'tsx prisma/seed.ts',
