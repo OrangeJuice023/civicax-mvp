@@ -1,10 +1,9 @@
-import { CivicaXDashboard } from '@/components/CivicaXDashboard'
+import { redirect } from 'next/navigation'
 
-export const metadata = {
-  title: 'CivicaX - Blockchain Infrastructure Monitoring System',
-  description: 'Real-time blockchain monitoring for Philippine public infrastructure projects.',
-}
-
-export default function InfrastructurePage() {
-  return <CivicaXDashboard />
+/**
+ * /infrastructure is a legacy route. The canonical hierarchy is
+ * / → /dashboard → /projects → /projects/[id], so send old links here.
+ */
+export default function InfrastructureRedirect() {
+  redirect('/dashboard')
 }

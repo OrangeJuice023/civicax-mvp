@@ -15,9 +15,17 @@
 
 // ---------------------------------------------------------------- project lifecycle
 
-/** Lifecycle states a Project can be in. */
+/**
+ * Lifecycle states a Project can be in.
+ *
+ * IN_PROGRESS is the project actively being implemented - this is the
+ * canonical "operational" status, not ACTIVE, which is kept only as an
+ * older synonym some analytics code may still reference. New code should
+ * write IN_PROGRESS.
+ */
 export const PROJECT_STATUSES = [
   'PLANNING',
+  'IN_PROGRESS',
   'ACTIVE',
   'PENDING_APPROVAL',
   'DELAYED',
@@ -28,17 +36,32 @@ export type ProjectStatus = (typeof PROJECT_STATUSES)[number]
 
 // ---------------------------------------------------------------- milestone lifecycle
 
-/** Lifecycle states a Milestone can be in. */
+/**
+ * Lifecycle states a Milestone can be in.
+ *
+ * BLOCKED_ON_EVIDENCE and BLOCKED_ON_VALIDATION are two distinct blocked
+ * states, not one generic BLOCKED - the milestone readiness panel has to say
+ * WHY a milestone is stuck (missing evidence vs. an outstanding validator
+ * sign-off), and that has to survive round-tripping through the database, so
+ * it is a status value, not a label computed only in the UI. This list is
+ * the single source of truth: seed data, the infrastructure engine, and
+ * every page reading Milestone.status must use exactly these strings.
+ */
 export const MILESTONE_STATUSES = [
   'DRAFT',
   'SUBMITTED',
+  'IN_PROGRESS',
   'EVIDENCE_REVIEW',
+  'BLOCKED_ON_EVIDENCE',
   'VALIDATION',
-  'READY_FOR_APPROVAL',
+  'BLOCKED_ON_VALIDATION',
+  // Every required validation is complete; awaiting the oversight office's
+  // approval action. One status, not two - "ready to submit" and "submitted,
+  // awaiting sign-off" are the same caller-visible fact in v0.1.
+  'PENDING_APPROVAL',
   'APPROVED',
   'PAYMENT_ELIGIBLE',
   'COMPLETED',
-  'BLOCKED',
   'RETURNED',
 ] as const
 export type MilestoneStatus = (typeof MILESTONE_STATUSES)[number]

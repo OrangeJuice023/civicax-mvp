@@ -1,7 +1,7 @@
 /**
  * The workflow engine.
  *
- * This module is the ONLY place in CivicaX permitted to write CaseEvent or
+ * This module is the ONLY place in Kawing permitted to write CaseEvent or
  * AuditRecord rows, and the only place permitted to move a Case between steps.
  * Everything else - Server Actions, route handlers, the AI agents, the seed
  * script - goes through the four functions exported here. The reason is a
@@ -187,7 +187,7 @@ const ANNOTATION_EVENT_ROLES: Record<string, readonly Role[]> = {
  *
  * RECOMMENDATION_* events are INTERNAL in v0.1. Whether an office publishes
  * the fact that an AI recommendation was made on a citizen's application is a
- * policy decision for that office; defaulting to disclosure would be CivicaX
+ * policy decision for that office; defaulting to disclosure would be Kawing
  * making it for them. A caller may override per event.
  */
 const DEFAULT_ANNOTATION_VISIBILITY: Record<string, Visibility> = {

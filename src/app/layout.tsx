@@ -19,9 +19,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'CivicaX - Blockchain Infrastructure Monitoring System',
+  title: {
+    default: 'KAWING — See how systems connect.',
+    template: 'KAWING — %s',
+  },
   description:
-    'CivicaX: A real-time blockchain infrastructure monitoring and cryptographic consensus oversight system for Philippine public works.',
+    'Kawing is a public infrastructure systems platform that connects project activity, evidence, validation, approvals, and audit history. Synthetic demonstration prototype.',
+  applicationName: 'Kawing',
   robots: { index: false, follow: false },
 }
 

@@ -2,7 +2,7 @@
  * Statutory processing deadlines.
  *
  * ---------------------------------------------------------------------------
- * SOURCE (this is real law, not a CivicaX invention)
+ * SOURCE (this is real law, not a Kawing invention)
  * ---------------------------------------------------------------------------
  * Republic Act No. 11032, the "Ease of Doing Business and Efficient Government
  * Service Delivery Act of 2018", Section 9 prescribes maximum processing times
@@ -21,7 +21,7 @@
  *     https://arta.gov.ph/about/the-eodb-law/
  *
  * Two further ceilings exist in the statute and are recorded here for
- * completeness. CivicaX does not apply them automatically, because deciding
+ * completeness. Kawing does not apply them automatically, because deciding
  * that a given transaction falls under them is a legal determination that
  * belongs to the office concerned, not to this software:
  *
@@ -31,8 +31,8 @@
  *   - Applications requiring approval of the local Sanggunian: 45 working days,
  *     extendible by a further 20 working days.
  *
- * Anything in CivicaX that is NOT from the statute above - per-step targets,
- * queue thresholds, "expected" durations - is labelled a CivicaX prototype
+ * Anything in Kawing that is NOT from the statute above - per-step targets,
+ * queue thresholds, "expected" durations - is labelled a Kawing prototype
  * metric and must not be presented as a legal requirement.
  */
 
@@ -191,7 +191,7 @@ export type SlaState = 'ON_TIME' | 'AT_RISK' | 'BREACHED' | 'UNKNOWN'
 /**
  * Evaluate a case against its statutory deadline.
  *
- * AT_RISK is a CivicaX prototype heuristic (a configurable fraction of the
+ * AT_RISK is a Kawing prototype heuristic (a configurable fraction of the
  * period remaining), NOT a statutory concept. Only BREACHED corresponds to
  * something the statute actually defines.
  */

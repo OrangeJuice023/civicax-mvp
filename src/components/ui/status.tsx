@@ -79,7 +79,7 @@ const SLA_PRESENTATION: Record<
     icon: Clock,
     label: 'At risk',
     title:
-      'CivicaX prototype heuristic: little of the statutory period remains. "At risk" is not a concept defined by the statute.',
+      'Kawing prototype heuristic: little of the statutory period remains. "At risk" is not a concept defined by the statute.',
   },
   BREACHED: {
     tone: 'critical',
@@ -93,7 +93,7 @@ const SLA_PRESENTATION: Record<
     icon: HelpCircle,
     label: 'No deadline set',
     title:
-      'This service has no recognised RA 11032 classification, so no statutory deadline was computed. CivicaX does not guess one.',
+      'This service has no recognised RA 11032 classification, so no statutory deadline was computed. Kawing does not guess one.',
   },
 }
 
@@ -163,8 +163,9 @@ const GENERIC_STATUS_TONES: Record<string, Tone> = {
   PAYMENT_ELIGIBLE: 'good',
   PAYMENT_RELEASED: 'good',
   ACTIVE: 'accent',
+  IN_PROGRESS: 'accent',
   SUBMITTED: 'accent',
-  READY_FOR_APPROVAL: 'accent',
+  PENDING_APPROVAL: 'accent',
   PENDING: 'neutral',
   DRAFT: 'neutral',
   MISSING: 'neutral',
@@ -172,6 +173,8 @@ const GENERIC_STATUS_TONES: Record<string, Tone> = {
   RETURNED: 'warning',
   REJECTED: 'critical',
   BLOCKED: 'critical',
+  BLOCKED_ON_VALIDATION: 'critical',
+  BLOCKED_ON_EVIDENCE: 'critical',
   DELAYED: 'critical',
   ON_HOLD: 'warning',
   UNDER_REVIEW: 'warning',
@@ -231,8 +234,8 @@ export function SeverityPill({
   const p = SEVERITY_PRESENTATION[severity] ?? SEVERITY_PRESENTATION.NONE
   const title =
     sampleSize === undefined
-      ? 'Compared against a CivicaX configured target, not a statutory one.'
-      : `Based on ${sampleSize} observed case${sampleSize === 1 ? '' : 's'}, compared against a CivicaX configured target. No claim of statistical significance.`
+      ? 'Compared against a Kawing configured target, not a statutory one.'
+      : `Based on ${sampleSize} observed case${sampleSize === 1 ? '' : 's'}, compared against a Kawing configured target. No claim of statistical significance.`
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
       <Pill tone={p.tone} icon={p.icon} label={p.label} title={title} />
@@ -250,7 +253,7 @@ export function SeverityPill({
 /**
  * Renders an agent's confidence as an explicit, bounded figure.
  *
- * Confidence in CivicaX is rule-derived: a required document that is absent from
+ * Confidence in Kawing is rule-derived: a required document that is absent from
  * the database is a certainty, not a 94% guess. This component shows the number
  * next to the basis for it so the reader can judge the claim rather than trust
  * a bar.

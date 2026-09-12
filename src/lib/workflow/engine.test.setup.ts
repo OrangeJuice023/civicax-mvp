@@ -38,7 +38,7 @@ const projectRoot = resolve(here, '..', '..', '..')
  * previous run's rows can never leak into this one, and a developer inspecting
  * a failure knows exactly which file to open.
  */
-const TEST_DB_PATH = join(tmpdir(), 'civicax-workflow-engine-test.db')
+const TEST_DB_PATH = join(tmpdir(), 'kawing-workflow-engine-test.db')
 
 // Prisma's better-sqlite3 adapter strips the "file:" prefix and opens the rest
 // as a filesystem path, so an absolute path is safe on Windows and POSIX alike.

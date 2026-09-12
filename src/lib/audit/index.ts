@@ -1,5 +1,5 @@
 /**
- * Public surface of the CivicaX audit ledger.
+ * Public surface of the Kawing audit ledger.
  *
  * Import from '@/lib/audit', never from the individual files: hash.ts is an
  * internal module whose only reason to exist is breaking the ledger/verify

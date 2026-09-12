@@ -40,7 +40,7 @@ export const BCRYPT_COST = 12
 /**
  * bcrypt hashes at most the first 72 UTF-8 bytes of its input, silently. That
  * silence is the danger: if a 200-character passphrase were accepted, every
- * other passphrase sharing its first 72 bytes would also authenticate. CivicaX
+ * other passphrase sharing its first 72 bytes would also authenticate. Kawing
  * rejects over-long input at both ends instead of truncating it, so no stored
  * hash can ever have a shorter effective secret than the user believes.
  */
@@ -49,7 +49,7 @@ export const MAX_PASSWORD_BYTES = 72
 /**
  * A floor, not a policy. Real password rules for a government deployment are a
  * matter for the agency's ICT policy (and, in the Philippines, for its Data
- * Privacy Act compliance posture); CivicaX does not invent one. This only stops
+ * Privacy Act compliance posture); Kawing does not invent one. This only stops
  * an empty or one-character string from reaching the hasher.
  */
 export const MIN_PASSWORD_LENGTH = 8

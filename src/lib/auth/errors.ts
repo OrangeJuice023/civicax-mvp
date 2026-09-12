@@ -23,7 +23,7 @@ const DEFAULT_MESSAGES: Record<AuthErrorCode, string> = {
 
 /**
  * Carried on the error so route handlers do not each re-derive the mapping and
- * accidentally answer 500 (which would look like a CivicaX bug) or 200.
+ * accidentally answer 500 (which would look like a Kawing bug) or 200.
  */
 const HTTP_STATUS: Record<AuthErrorCode, 401 | 403> = {
   UNAUTHENTICATED: 401,

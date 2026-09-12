@@ -5,7 +5,7 @@
  * What this layer is for
  * ---------------------------------------------------------------------------
  * Every byte that arrives from a browser is untrusted, including bytes sent by
- * CivicaX's own forms. These schemas are the only sanctioned way for request
+ * Kawing's own forms. These schemas are the only sanctioned way for request
  * data to become typed values, and they run on the SERVER in every case. A zod
  * schema reused in a client component for nicer form feedback is a convenience;
  * it is never the check that counts.
@@ -28,7 +28,7 @@
  *
  * 3. NO INVENTED GOVERNMENT FACTS. These schemas constrain formats, never
  *    substance. There is no list of "valid" documentary requirements or LGU
- *    codes here, because CivicaX does not hold the authoritative version of
+ *    codes here, because Kawing does not hold the authoritative version of
  *    either; those are configuration (ServiceRequirement) and reference data.
  *
  * Error messages are written to be shown to a user, so they say what to do
@@ -100,7 +100,7 @@ function optional<T extends z.ZodType>(schema: T) {
  *
  * PSA has published PSGC codes in both 9-digit and 10-digit forms (the longer
  * form came with the 2019 revision), so both are accepted rather than asserting
- * that one of them is "the" format. CivicaX does not validate the code against
+ * that one of them is "the" format. Kawing does not validate the code against
  * the PSGC register: it does not hold that dataset, and pretending to check
  * would be worse than not checking. Provenance for any code actually used in
  * the demo belongs in the seed data's source note.
@@ -207,7 +207,7 @@ export const caseCreateSchema = z.strictObject({
 
   /**
    * Where the transaction is being filed. Free text plus an optional PSGC code
-   * rather than a fixed list of LGUs, because CivicaX is not the authority on
+   * rather than a fixed list of LGUs, because Kawing is not the authority on
    * the roster of Philippine LGUs and hard-coding a subset would read as one.
    */
   lguName: optional(text('The LGU name', 2, 120)),
@@ -231,7 +231,7 @@ export const caseCreateSchema = z.strictObject({
   syntheticDemo: z
     .literal(true, {
       error:
-        'CivicaX v0.1 accepts synthetic demonstration transactions only. Every case it stores is labelled as such.',
+        'Kawing v0.1 accepts synthetic demonstration transactions only. Every case it stores is labelled as such.',
     })
     .optional(),
 })
@@ -263,7 +263,7 @@ export const caseTransitionSchema = z.strictObject({
   transitionId: identifier('The workflow transition'),
   action: optional(
     z.enum(TRANSITION_ACTIONS, {
-      error: 'That is not a workflow action CivicaX recognises.',
+      error: 'That is not a workflow action Kawing recognises.',
     }),
   ),
   note: optional(text('The note', 1, 2000)),
@@ -359,7 +359,7 @@ export type RecommendationReviewInput = z.infer<typeof recommendationReviewSchem
 export const agentRunSchema = z.strictObject({
   caseId: identifier('The transaction'),
   agentType: z.enum(AGENT_TYPES, {
-    error: 'That is not an agent CivicaX provides.',
+    error: 'That is not an agent Kawing provides.',
   }),
 })
 
@@ -394,7 +394,7 @@ const paginationLimit = z.coerce
  * field on its own would make every analytics endpoint an open cross-office
  * read.
  *
- * Everything an analytics endpoint returns is a CivicaX prototype metric
+ * Everything an analytics endpoint returns is a Kawing prototype metric
  * computed over synthetic transactions, except the RA 11032 deadline itself.
  * The response, not this schema, is where that has to be said - but it has to
  * be said.
@@ -478,7 +478,7 @@ export type CaseIdParam = z.infer<typeof caseIdParamSchema>
 export const recommendationListQuerySchema = z.strictObject({
   caseId: optional(identifier('The transaction')),
   agentType: optional(
-    z.enum(AGENT_TYPES, { error: 'That is not an agent CivicaX provides.' }),
+    z.enum(AGENT_TYPES, { error: 'That is not an agent Kawing provides.' }),
   ),
   status: optional(
     z.enum(['pending', 'approved', 'rejected', 'expired'], {

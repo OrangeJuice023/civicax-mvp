@@ -29,7 +29,7 @@
  *    only record of the expected length is the chain itself. Detecting this
  *    requires an EXTERNAL ANCHOR: periodically publishing the head hash and
  *    event count per case somewhere outside this database (a second store, a
- *    signed daily digest, a public timestamp). CivicaX v0.1 does not implement
+ *    signed daily digest, a public timestamp). Kawing v0.1 does not implement
  *    an anchor, so truncation is out of scope and must be described as such.
  *
  * 2. WHOLESALE REWRITE. Anyone with write access to the database also has

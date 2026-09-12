@@ -8,7 +8,7 @@ import {
 /**
  * Provenance labelling.
  *
- * This is a correctness feature, not decoration. CivicaX shows synthetic
+ * This is a correctness feature, not decoration. Kawing shows synthetic
  * demonstration transactions next to genuinely sourced reference data, and a
  * viewer must never be able to mistake one for the other. Every surface that
  * renders numbers is expected to carry one of these.
@@ -16,7 +16,7 @@ import {
  * The rule the components enforce:
  *   SYNTHETIC_DEMO  - fabricated. Never presentable as government statistics.
  *   OFFICIAL_SOURCE - traceable to a named statute or published dataset.
- *   CIVICAX_DERIVED - computed by CivicaX; inherits the provenance of its least
+ *   KAWING_DERIVED - computed by Kawing; inherits the provenance of its least
  *                     authoritative input, so a metric over synthetic cases is
  *                     labelled derived, not official.
  */
@@ -36,11 +36,11 @@ const CLASSIFICATION_STYLES: Record<
     className: 'bg-good-subtle text-ink border-good',
     title: 'Traceable to a named public source or statute. See the Data Sources page.',
   },
-  CIVICAX_DERIVED: {
+  KAWING_DERIVED: {
     icon: Sigma,
     className: 'bg-accent-subtle text-ink border-accent',
     title:
-      'A CivicaX prototype metric, computed by this application. Not an official government measure.',
+      'A Kawing prototype metric, computed by this application. Not an official government measure.',
   },
 }
 

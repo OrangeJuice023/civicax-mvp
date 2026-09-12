@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 
 /**
- * Database access for CivicaX.
+ * Database access for Kawing.
  *
  * Prisma 7 connects through a driver adapter rather than a connection string in
  * the schema. That is what makes the PostgreSQL migration path a genuinely
@@ -26,10 +26,10 @@ function createClient(): PrismaClient {
 
 // Next.js dev mode re-evaluates modules on hot reload. Without this the process
 // accumulates one SQLite handle per reload until it exhausts them.
-const globalForPrisma = globalThis as unknown as { civicaxPrisma?: PrismaClient }
+const globalForPrisma = globalThis as unknown as { kawingPrisma?: PrismaClient }
 
-export const db: PrismaClient = globalForPrisma.civicaxPrisma ?? createClient()
+export const db: PrismaClient = globalForPrisma.kawingPrisma ?? createClient()
 
 if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.civicaxPrisma = db
+  globalForPrisma.kawingPrisma = db
 }

@@ -1,5 +1,5 @@
 /**
- * Public surface of the CivicaX workflow engine.
+ * Public surface of the Kawing workflow engine.
  *
  * Import from '@/lib/workflow'. The four functions below are the only
  * sanctioned way to change the state of a transaction:

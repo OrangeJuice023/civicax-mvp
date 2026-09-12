@@ -44,7 +44,7 @@ import { isRole, type Role } from '../domain/constants'
 import { AuthError } from './errors'
 
 /**
- * The verbs CivicaX authorises. Derived from a const array so that tests can
+ * The verbs Kawing authorises. Derived from a const array so that tests can
  * enumerate them and prove no action is silently unhandled.
  *
  * 'case:read'          - the citizen-facing view of a transaction: status,
@@ -214,7 +214,7 @@ const POLICY: Record<Role, Record<Action, Rule>> = {
     'case:note': {
       effect: 'deny',
       reason:
-        'Case notes are an internal record. CivicaX v0.1 has no applicant messaging channel; adding one would need its own action and its own visibility rules.',
+        'Case notes are an internal record. Kawing v0.1 has no applicant messaging channel; adding one would need its own action and its own visibility rules.',
     },
     'document:verify': {
       effect: 'deny',
@@ -439,7 +439,7 @@ export function can(
   // one this build knows about (an older token, a renamed role). Unknown role,
   // no permissions.
   if (!isRole(user.role)) {
-    return deny('This account has a role CivicaX does not recognise.')
+    return deny('This account has a role Kawing does not recognise.')
   }
 
   const rule: Rule | undefined = POLICY[user.role][action]

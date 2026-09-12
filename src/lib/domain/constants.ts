@@ -1,5 +1,5 @@
 /**
- * CivicaX domain vocabularies.
+ * Kawing domain vocabularies.
  *
  * The Prisma schema stores these as plain strings so it stays portable across
  * SQLite and PostgreSQL (SQLite has no native enum type). This module is the
@@ -132,25 +132,25 @@ export type GenerationMode = (typeof GENERATION_MODES)[number]
 // ---------------------------------------------------------------- provenance
 
 /**
- * Drives the visible provenance badges across the UI. CivicaX must never render
+ * Drives the visible provenance badges across the UI. Kawing must never render
  * a synthetic transaction in a way that could be read as official statistics.
  *
  * SYNTHETIC_DEMO  - fabricated for demonstration. Not real government data.
  * OFFICIAL_SOURCE - sourced from a named public dataset or statute.
- * CIVICAX_DERIVED - computed by CivicaX from whatever the inputs were; carries
+ * KAWING_DERIVED - computed by Kawing from whatever the inputs were; carries
  *                   the provenance of its least authoritative input.
  */
 export const DATA_CLASSIFICATIONS = [
   'SYNTHETIC_DEMO',
   'OFFICIAL_SOURCE',
-  'CIVICAX_DERIVED',
+  'KAWING_DERIVED',
 ] as const
 export type DataClassification = (typeof DATA_CLASSIFICATIONS)[number]
 
 export const DATA_CLASSIFICATION_LABELS: Record<DataClassification, string> = {
   SYNTHETIC_DEMO: 'Synthetic demo data',
   OFFICIAL_SOURCE: 'Official / public source',
-  CIVICAX_DERIVED: 'CivicaX prototype metric',
+  KAWING_DERIVED: 'Kawing prototype metric',
 }
 
 /** Where a documentary requirement came from. */

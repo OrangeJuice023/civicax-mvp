@@ -1,4 +1,4 @@
-// CivicaX v0.1 - Functional Prototype
+// Kawing v0.1 - Functional Prototype
 // Schema is deliberately PROVIDER-PORTABLE: no native enums, no arrays, no
 // provider-specific @db.* attributes. Dev runs on SQLite (zero setup); moving to
 // PostgreSQL is a one-line datasource change + `prisma migrate dev`.
@@ -135,7 +135,7 @@ model WorkflowStep {
   sequence     Int
   officeId     String?
   office       Office?            @relation(fields: [officeId], references: [id])
-  // CivicaX prototype metric: per-step target used for queue triage. This is a
+  // Kawing prototype metric: per-step target used for queue triage. This is a
   // configured threshold, NOT a statutory figure.
   targetHours  Int?
   isInitial    Boolean            @default(false)
@@ -378,7 +378,7 @@ model AgentRecommendation {
 
 // ---------------------------------------------------------------- analytics
 
-// Pre-aggregated office/step performance. All values are CivicaX prototype
+// Pre-aggregated office/step performance. All values are Kawing prototype
 // metrics computed over synthetic transactions unless stated otherwise.
 model OfficeMetric {
   id             String        @id @default(cuid())
@@ -431,6 +431,8 @@ model Project {
   progress      Int         @default(0)
   procurementId String?
   contractId    String?
+  fundsDisbursed Int         @default(0)
+  delayedReason  String?
 
   milestones    Milestone[]
   events        CaseEvent[]   @relation("ProjectEvents")
@@ -524,6 +526,7 @@ model Validation {
   department    String
   role          String
   status        String      // PENDING | APPROVED | REJECTED
+  required      Boolean     @default(false)
   note          String?
   validatedAt   DateTime?
   createdAt     DateTime    @default(now())
@@ -546,9 +549,9 @@ model Validator {
   name          String
   department    String
   role          String
-  status        String          // ACTIVE | OFFLINE
+status        String      // ACTIVE | INACTIVE | SUSPENDED
   lastActivity  DateTime?
-  isActive      Boolean         @default(true)
+  isActive      Boolean     @default(true)
   validations   Validation[]
 
   syntheticDemo      Boolean  @default(true)

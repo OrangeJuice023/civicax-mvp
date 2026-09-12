@@ -4,7 +4,7 @@
  * ---------------------------------------------------------------------------
  * Why this and not NextAuth
  * ---------------------------------------------------------------------------
- * CivicaX has exactly one credential type (email + password against a seeded
+ * Kawing has exactly one credential type (email + password against a seeded
  * User row) and three roles. NextAuth would add an adapter, a callback surface,
  * and its own route handlers to review - a lot of moving parts for a prototype
  * whose security story a reader has to be able to audit in one sitting. Signing
@@ -54,7 +54,7 @@ export type SessionUser = {
   position: string | null
 }
 
-export const SESSION_COOKIE_NAME = 'civicax_session'
+export const SESSION_COOKIE_NAME = 'kawing_session'
 
 /**
  * Eight hours: about one working shift, so a frontline officer signs in once at
@@ -65,8 +65,8 @@ export const SESSION_COOKIE_NAME = 'civicax_session'
 export const SESSION_TTL_SECONDS = 8 * 60 * 60
 
 const JWT_ALGORITHM = 'HS256'
-const JWT_ISSUER = 'civicax'
-const JWT_AUDIENCE = 'civicax-app'
+const JWT_ISSUER = 'kawing'
+const JWT_AUDIENCE = 'kawing-app'
 
 /**
  * HMAC-SHA256 wants a key at least as long as its hash output. Shorter keys are
@@ -86,7 +86,7 @@ const PLACEHOLDER_SECRETS: readonly string[] = [
   'change-me',
   'secret',
   'development',
-  'civicax',
+  'kawing',
 ]
 
 let cachedKey: Uint8Array | null = null
@@ -142,7 +142,7 @@ function getSigningKey(): Uint8Array {
 
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
-      `CivicaX refuses to issue sessions: ${problem}. Generate a key with the ` +
+      `Kawing refuses to issue sessions: ${problem}. Generate a key with the ` +
         'command documented in .env.example and set SESSION_SECRET in the environment.',
     )
   }
@@ -152,7 +152,7 @@ function getSigningKey(): Uint8Array {
     console.warn(
       [
         '',
-        '  CivicaX SESSION WARNING',
+        '  Kawing SESSION WARNING',
         `  ${problem}.`,
         '  Signing sessions with a random key generated for this process only.',
         '  Every session is invalidated when the server restarts.',
@@ -209,7 +209,7 @@ export function clearedSessionCookieAttributes(): SessionCookieAttributes {
  * cookie named SESSION_COOKIE_NAME using sessionCookieAttributes().
  *
  * Throws rather than issuing a token for an incoherent SessionUser, because a
- * token carrying a role CivicaX does not recognise is a token policy.ts would
+ * token carrying a role Kawing does not recognise is a token policy.ts would
  * later have to reason about with no clean way to reject it.
  */
 export async function createSessionCookie(user: SessionUser): Promise<string> {
