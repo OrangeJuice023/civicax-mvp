@@ -15,7 +15,18 @@ try {
 export default defineConfig({
   schema: path.join('prisma', 'schema.prisma'),
   datasource: {
-    url: process.env.DATABASE_URL ?? 'file:./dev.db',
+    // Migrations need a DIRECT connection, not the pgbouncer-pooled one -
+    // pooled connections in transaction mode don't reliably support the
+    // advisory locks `prisma migrate` takes. Neon/Vercel Postgres expose both
+    // on the same project under two naming conventions (DATABASE_URL_UNPOOLED
+    // and POSTGRES_URL_NON_POOLING point at the same direct connection); the
+    // pooled equivalent (POSTGRES_PRISMA_URL) is what the runtime client in
+    // src/lib/db.ts uses instead.
+    url:
+      process.env.DATABASE_URL_UNPOOLED ??
+      process.env.POSTGRES_URL_NON_POOLING ??
+      process.env.DATABASE_URL ??
+      '',
   },
   migrations: {
     seed: 'tsx prisma/seed.ts',

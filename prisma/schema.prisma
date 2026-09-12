@@ -1,7 +1,9 @@
 // Kawing v0.1 - Functional Prototype
 // Schema is deliberately PROVIDER-PORTABLE: no native enums, no arrays, no
-// provider-specific @db.* attributes. Dev runs on SQLite (zero setup); moving to
-// PostgreSQL is a one-line datasource change + `prisma migrate dev`.
+// provider-specific @db.* attributes - that discipline is what made this the
+// one-line change it was designed to be. Originally ran on SQLite for
+// zero-setup local dev; now runs on PostgreSQL (Neon, via Vercel Postgres)
+// everywhere, local and deployed, against the same schema.
 // Role/status/event vocabularies live in src/lib/domain/constants.ts as TS unions.
 
 generator client {
@@ -9,7 +11,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ---------------------------------------------------------------- identity

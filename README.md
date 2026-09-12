@@ -34,9 +34,12 @@ script for demonstration purposes, and the UI labels it as such throughout.
 
 ## Getting started
 
+Runs on PostgreSQL (Neon, via Vercel Postgres) - see `.env.example` for how
+to get a local connection string from the Neon Console.
+
 ```bash
 npm install
-cp .env.example .env        # then generate a real SESSION_SECRET, see the file
+cp .env.example .env        # fill in DATABASE_URL/DATABASE_URL_UNPOOLED and a real SESSION_SECRET
 npx prisma migrate deploy   # apply the committed migrations
 npx prisma db seed          # populate synthetic demonstration data
 npm run dev
@@ -45,6 +48,11 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000). It redirects to
 `/dashboard`; sign in from there to unlock project actions (validating a
 milestone, approving it, verifying the audit chain).
+
+On Vercel, both steps above run automatically as part of `npm run build`
+(see `package.json`) against whatever Postgres database is attached under
+the project's Storage tab - every deploy resets the demo data to its
+canonical starting state.
 
 ## The hero demo walkthrough
 
