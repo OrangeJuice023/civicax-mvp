@@ -5,7 +5,16 @@
    --------------------------------------------------------------------------
    Visual language: government infrastructure / enterprise SaaS. Restrained,
    information-dense, high-contrast. Deliberately NOT a consumer or crypto
-   aesthetic - no gradients, no glows, no decorative colour.
+   aesthetic - no glows, no decorative colour.
+
+   The neutral ramp is COOL (slate), not the warm grey it started as, so it
+   sits under the brand navy/blue/teal without clashing. Lightness steps were
+   matched to the values they replaced, so text contrast is unchanged or
+   slightly better (ink-secondary 7.5:1, ink-muted 4.9:1 on surface-1).
+
+   --ka-* are the FIXED brand colours from the Kawing brand kit. They do not
+   swap between light and dark: a logo and a brand shell keep their colour in
+   both themes. Everything else goes through the theme-reactive --ca-* tokens.
 
    Every colour is declared as a CSS variable on :root and mapped into Tailwind
    via @theme inline, so a single variable swap re-themes every utility. Dark
@@ -26,27 +35,35 @@
 :root {
   color-scheme: light;
 
+  /* Kawing brand palette - fixed in both themes. */
+  --ka-navy: #0b2d5b;
+  --ka-navy-deep: #071f40;
+  --ka-blue: #2563eb;
+  --ka-teal: #10b981;
+  --ka-neutral: #94a3b8;
+  --ka-bg: #f8fafc;
+
   /* surfaces, back to front */
-  --ca-canvas: #f6f6f4;
-  --ca-surface-1: #fcfcfb;
-  --ca-surface-2: #f0efec;
-  --ca-surface-3: #e6e5e1;
+  --ca-canvas: #f8fafc;
+  --ca-surface-1: #ffffff;
+  --ca-surface-2: #f1f5f9;
+  --ca-surface-3: #e2e8f0;
 
   /* borders: hairline for dividers, strong for emphasis */
-  --ca-border: #dcdbd6;
-  --ca-border-strong: #bfbeb8;
+  --ca-border: #e2e8f0;
+  --ca-border-strong: #cbd5e1;
 
   /* ink */
-  --ca-ink-primary: #0b0b0b;
-  --ca-ink-secondary: #52514e;
-  --ca-ink-muted: #7a7974;
-  --ca-ink-inverse: #fcfcfb;
+  --ca-ink-primary: #0f172a;
+  --ca-ink-secondary: #475569;
+  --ca-ink-muted: #64748b;
+  --ca-ink-inverse: #ffffff;
 
-  /* institutional accent (matches categorical slot 1) */
-  --ca-accent: #2a78d6;
-  --ca-accent-hover: #256abf;
-  --ca-accent-subtle: #cde2fb;
-  --ca-accent-ink: #184f95;
+  /* institutional accent - the brand blue (matches categorical slot 1) */
+  --ca-accent: #2563eb;
+  --ca-accent-hover: #1d4ed8;
+  --ca-accent-subtle: #dbeafe;
+  --ca-accent-ink: #1e40af;
 
   /* status - fixed roles, never reused as series colours.
      Always paired with an icon and a text label so meaning never rests on
@@ -61,9 +78,9 @@
   --ca-critical-subtle: #f9e3e3;
 
   /* categorical series, in fixed assignment order */
-  --ca-series-1: #2a78d6;
+  --ca-series-1: #2563eb;
   --ca-series-2: #eb6834;
-  --ca-series-3: #1baf7a;
+  --ca-series-3: #10b981;
   --ca-series-4: #eda100;
 
   /* sequential blue ramp, light -> dark, for magnitude encoding.
@@ -83,23 +100,23 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --ca-canvas: #121211;
-    --ca-surface-1: #1a1a19;
-    --ca-surface-2: #232322;
-    --ca-surface-3: #2d2d2b;
+    --ca-canvas: #0b1220;
+    --ca-surface-1: #111a2b;
+    --ca-surface-2: #1a2436;
+    --ca-surface-3: #243044;
 
-    --ca-border: #383835;
-    --ca-border-strong: #4d4d49;
+    --ca-border: #27334a;
+    --ca-border-strong: #3a4863;
 
-    --ca-ink-primary: #ffffff;
-    --ca-ink-secondary: #c3c2b7;
-    --ca-ink-muted: #91908a;
-    --ca-ink-inverse: #121211;
+    --ca-ink-primary: #f8fafc;
+    --ca-ink-secondary: #cbd5e1;
+    --ca-ink-muted: #94a3b8;
+    --ca-ink-inverse: #0b1220;
 
-    --ca-accent: #3987e5;
-    --ca-accent-hover: #5598e7;
-    --ca-accent-subtle: #14294a;
-    --ca-accent-ink: #9ec5f4;
+    --ca-accent: #60a5fa;
+    --ca-accent-hover: #93c5fd;
+    --ca-accent-subtle: #1e3a8a;
+    --ca-accent-ink: #bfdbfe;
 
     --ca-good: #0ca30c;
     --ca-warning: #fab219;
@@ -110,9 +127,9 @@
     --ca-serious-subtle: #33201a;
     --ca-critical-subtle: #331717;
 
-    --ca-series-1: #3987e5;
+    --ca-series-1: #60a5fa;
     --ca-series-2: #d95926;
-    --ca-series-3: #199e70;
+    --ca-series-3: #34d399;
     --ca-series-4: #c98500;
 
     --ca-seq-100: #0d366b;
@@ -121,31 +138,31 @@
     --ca-seq-550: #5598e7;
     --ca-seq-700: #9ec5f4;
 
-    --ca-grid: #2d2d2b;
-    --ca-axis: #4d4d49;
+    --ca-grid: #243044;
+    --ca-axis: #3a4863;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --ca-canvas: #121211;
-  --ca-surface-1: #1a1a19;
-  --ca-surface-2: #232322;
-  --ca-surface-3: #2d2d2b;
+  --ca-canvas: #0b1220;
+  --ca-surface-1: #111a2b;
+  --ca-surface-2: #1a2436;
+  --ca-surface-3: #243044;
 
-  --ca-border: #383835;
-  --ca-border-strong: #4d4d49;
+  --ca-border: #27334a;
+  --ca-border-strong: #3a4863;
 
-  --ca-ink-primary: #ffffff;
-  --ca-ink-secondary: #c3c2b7;
-  --ca-ink-muted: #91908a;
-  --ca-ink-inverse: #121211;
+  --ca-ink-primary: #f8fafc;
+  --ca-ink-secondary: #cbd5e1;
+  --ca-ink-muted: #94a3b8;
+  --ca-ink-inverse: #0b1220;
 
-  --ca-accent: #3987e5;
-  --ca-accent-hover: #5598e7;
-  --ca-accent-subtle: #14294a;
-  --ca-accent-ink: #9ec5f4;
+  --ca-accent: #60a5fa;
+  --ca-accent-hover: #93c5fd;
+  --ca-accent-subtle: #1e3a8a;
+  --ca-accent-ink: #bfdbfe;
 
   --ca-good: #0ca30c;
   --ca-warning: #fab219;
@@ -156,9 +173,9 @@
   --ca-serious-subtle: #33201a;
   --ca-critical-subtle: #331717;
 
-  --ca-series-1: #3987e5;
+  --ca-series-1: #60a5fa;
   --ca-series-2: #d95926;
-  --ca-series-3: #199e70;
+  --ca-series-3: #34d399;
   --ca-series-4: #c98500;
 
   --ca-seq-100: #0d366b;
@@ -167,11 +184,19 @@
   --ca-seq-550: #5598e7;
   --ca-seq-700: #9ec5f4;
 
-  --ca-grid: #2d2d2b;
-  --ca-axis: #4d4d49;
+  --ca-grid: #243044;
+  --ca-axis: #3a4863;
 }
 
 @theme inline {
+  /* Brand - fixed, non-theme-reactive. */
+  --color-brand-navy: var(--ka-navy);
+  --color-brand-navy-deep: var(--ka-navy-deep);
+  --color-brand-blue: var(--ka-blue);
+  --color-brand-teal: var(--ka-teal);
+  --color-brand-neutral: var(--ka-neutral);
+  --color-brand-bg: var(--ka-bg);
+
   --color-canvas: var(--ca-canvas);
   --color-surface-1: var(--ca-surface-1);
   --color-surface-2: var(--ca-surface-2);

@@ -7,7 +7,7 @@ import { verifyProjectAuditChain } from '@/lib/audit'
 import { Card, CardHeader } from '@/components/ui/primitives'
 import { ProvenanceBadge } from '@/components/ui/provenance'
 import { getPendingActionsCount } from '@/lib/infrastructure/queries'
-import { DashboardShell } from '../dashboard/DashboardShell'
+import { AppShell } from '@/components/AppShell'
 import { AuditLedgerClient, type LedgerRow } from './AuditLedgerClient'
 
 const LEDGER_PAGE_SIZE = 200
@@ -36,7 +36,7 @@ export default async function AuditPage({
 
   if (!decision.allowed) {
     return (
-      <DashboardShell user={user} active="audit ledger" pendingActionsCount={pendingActionsCount}>
+      <AppShell user={user} active="audit ledger" pendingActionsCount={pendingActionsCount}>
         <Card>
           <CardHeader title="Audit ledger" description="Tamper-evident record of project lifecycle events." />
           <div className="space-y-3 p-4 text-sm text-ink-secondary">
@@ -48,7 +48,7 @@ export default async function AuditPage({
             )}
           </div>
         </Card>
-      </DashboardShell>
+      </AppShell>
     )
   }
 
@@ -100,7 +100,7 @@ export default async function AuditPage({
     .filter(({ v }) => !v.valid)
 
   return (
-    <DashboardShell user={user} active="audit ledger" pendingActionsCount={pendingActionsCount}>
+    <AppShell user={user} active="audit ledger" pendingActionsCount={pendingActionsCount}>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card className="overflow-hidden">
@@ -147,6 +147,6 @@ export default async function AuditPage({
         <span>Showing the {rows.length} most recent events across all projects.</span>
         <span className="inline-flex items-center gap-1.5"><ProvenanceBadge classification="SYNTHETIC_DEMO" /></span>
       </footer>
-    </DashboardShell>
+    </AppShell>
   )
 }

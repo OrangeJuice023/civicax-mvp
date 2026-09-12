@@ -157,6 +157,23 @@ export function infrastructureEventLabel(type: string): string {
   return INFRASTRUCTURE_EVENT_LABELS[type] ?? type
 }
 
+// ---------------------------------------------------------------- current milestone
+
+/**
+ * The milestone a project is actually working on right now: the first one in
+ * sequence that is neither finished nor still a draft. Falls back to the last
+ * milestone so a fully-completed project still reports something.
+ *
+ * One definition, used by the dashboard, the projects table and the project
+ * detail page - "current milestone" meaning three slightly different things
+ * on three screens is how a portfolio view and a detail view end up
+ * contradicting each other.
+ */
+export function pickCurrentMilestone<M extends { status: string }>(milestones: readonly M[]): M | null {
+  if (milestones.length === 0) return null
+  return milestones.find((m) => m.status !== 'COMPLETED' && m.status !== 'DRAFT') ?? milestones[milestones.length - 1]
+}
+
 // ---------------------------------------------------------------- derived milestone readiness
 
 /**

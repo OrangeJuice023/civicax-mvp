@@ -4,7 +4,7 @@ import { readSession } from '@/lib/auth/session'
 import { Card, CardHeader } from '@/components/ui/primitives'
 import { ProvenanceBadge } from '@/components/ui/provenance'
 import { getPendingActionsCount } from '@/lib/infrastructure/queries'
-import { DashboardShell } from '../dashboard/DashboardShell'
+import { AppShell } from '@/components/AppShell'
 import { ValidatorsTable, type ValidatorRow } from './ValidatorsTable'
 
 export const metadata: Metadata = { title: 'Validators' }
@@ -50,7 +50,7 @@ export default async function ValidatorsPage() {
   }))
 
   return (
-    <DashboardShell user={user} active="validators" pendingActionsCount={pendingActionsCount}>
+    <AppShell user={user} active="validators" pendingActionsCount={pendingActionsCount}>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Card className="p-3">
           <div className="text-[11px] font-medium uppercase tracking-wide text-muted">Total</div>
@@ -74,6 +74,6 @@ export default async function ValidatorsPage() {
         />
         <ValidatorsTable rows={rows} />
       </Card>
-    </DashboardShell>
+    </AppShell>
   )
 }

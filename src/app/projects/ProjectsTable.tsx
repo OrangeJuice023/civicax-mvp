@@ -4,12 +4,14 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { StatusPill } from '@/components/ui/status'
 import { formatPeso, formatPercent, projectStatusLabel, milestoneStatusLabel } from '@/lib/infrastructure/labels'
+import { ProjectArt } from '@/components/ui/project-art'
 
 export type ProjectRow = {
   id: string
   projectId: string
   name: string
   category: string
+  sector: string
   location: string
   city: string
   budget: number
@@ -25,8 +27,8 @@ export type ProjectRow = {
  * control rendered, because none is implemented (see section 13/49 of the
  * hardening pass: never imply a control that does not work).
  */
-export function ProjectsTable({ rows }: { rows: ProjectRow[] }) {
-  const [search, setSearch] = useState('')
+export function ProjectsTable({ rows, initialSearch = '' }: { rows: ProjectRow[]; initialSearch?: string }) {
+  const [search, setSearch] = useState(initialSearch)
   const [status, setStatus] = useState('ALL')
   const [category, setCategory] = useState('ALL')
 
@@ -98,7 +100,15 @@ export function ProjectsTable({ rows }: { rows: ProjectRow[] }) {
             {filtered.map((project) => (
               <tr key={project.id} className="border-b border-hairline last:border-0 hover:bg-surface-2">
                 <td className="px-4 py-2">
-                  <Link href={`/projects/${project.projectId}`} className="font-medium text-ink hover:underline">
+                  <Link
+                    href={`/projects/${project.projectId}`}
+                    className="ca-numeric flex items-center gap-2 font-medium text-ink hover:underline"
+                  >
+                    <ProjectArt
+                      category={project.category}
+                      sector={project.sector}
+                      className="h-7 w-10 shrink-0 rounded border border-hairline"
+                    />
                     {project.projectId}
                   </Link>
                 </td>

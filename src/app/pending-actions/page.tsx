@@ -7,7 +7,7 @@ import { StatusPill } from '@/components/ui/status'
 import { ProvenanceBadge } from '@/components/ui/provenance'
 import { milestoneStatusLabel } from '@/lib/infrastructure/labels'
 import { getPendingActionsCount } from '@/lib/infrastructure/queries'
-import { DashboardShell } from '../dashboard/DashboardShell'
+import { AppShell } from '@/components/AppShell'
 
 /**
  * Everything currently waiting on a person: milestones ready for governance
@@ -47,7 +47,7 @@ export default async function PendingActionsPage() {
   ])
 
   return (
-    <DashboardShell user={user} active="pending actions" pendingActionsCount={pendingActionsCount}>
+    <AppShell user={user} active="pending actions" pendingActionsCount={pendingActionsCount}>
       <div className="space-y-4">
         <Card>
           <CardHeader
@@ -156,6 +156,6 @@ export default async function PendingActionsPage() {
         <span>All values derived from the seeded database.</span>
         <span className="inline-flex items-center gap-1.5"><ProvenanceBadge classification="SYNTHETIC_DEMO" /></span>
       </footer>
-    </DashboardShell>
+    </AppShell>
   )
 }
